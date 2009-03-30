@@ -3,8 +3,8 @@ package org.eclipse.imp.test.nul.parser;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.imp.parser.ISourcePositionLocator;
 
-public class NullASTNodeLocator implements ISourcePositionLocator {
-    public NullASTNodeLocator() {
+public class NullSourcePositionLocator implements ISourcePositionLocator {
+    public NullSourcePositionLocator() {
     }
 
     public Object findNode(Object ast, int offset) {
