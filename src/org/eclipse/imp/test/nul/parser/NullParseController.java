@@ -1,53 +1,23 @@
 package org.eclipse.imp.test.nul.parser;
 
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.imp.services.ILanguageSyntaxProperties;
-import org.eclipse.imp.model.ISourceProject;
-import org.eclipse.imp.parser.ILexer;
-import org.eclipse.imp.parser.IMessageHandler;
 import org.eclipse.imp.parser.IParseController;
-import org.eclipse.imp.parser.IParser;
 import org.eclipse.imp.parser.ISourcePositionLocator;
 import org.eclipse.imp.parser.MessageHandlerAdapter;
 import org.eclipse.imp.parser.SimpleLPGParseController;
-
+import org.eclipse.imp.services.ILanguageSyntaxProperties;
 import org.eclipse.imp.test.nul.Activator;
 
 /**
  * @author rfuhrer@watson.ibm.com
  */
 public class NullParseController extends SimpleLPGParseController implements IParseController {
-    private NullParser parser;
-    private NullLexer lexer;
-
     public NullParseController() {
         super(Activator.kLanguageID);
     }
 
-    /**
-     * @param filePath
-     *            Absolute path of file
-     * @param project
-     *            Project that contains the file
-     * @param handler
-     *            A message handler to receive error messages (or any others)
-     *            from the parser
-     */
-    public void initialize(IPath filePath, ISourceProject project, IMessageHandler handler) {
-        super.initialize(filePath, project, handler);
-    }
-
-    public IParser getParser() {
-        return parser;
-    }
-
-    public ILexer getLexer() {
-        return lexer;
-    }
-
-    public ISourcePositionLocator getNodeLocator() {
-        return new NullASTNodeLocator();
+    public ISourcePositionLocator getSourcePositionLocator() {
+        return new NullSourcePositionLocator();
     }
 
     public ILanguageSyntaxProperties getSyntaxProperties() {
@@ -57,30 +27,29 @@ public class NullParseController extends SimpleLPGParseController implements IPa
     /**
     * setFilePath() should be called before calling this method.
     */
-    public Object parse(String contents, boolean scanOnly, IProgressMonitor monitor) {
+    public Object parse(String contents, IProgressMonitor monitor) {
         PMMonitor my_monitor= new PMMonitor(monitor);
         char[] contentsArray= contents.toCharArray();
 
-        if (lexer == null) {
-            lexer= new NullLexer();
+        if (fLexer == null) {
+            fLexer= new NullLexer();
         }
-        lexer.reset(contentsArray, fFilePath.toPortableString());
+        fLexer.reset(contentsArray, fFilePath.toPortableString());
 
-        if (parser == null) {
-            parser= new NullParser(lexer.getLexStream());
+        if (fParser == null) {
+            fParser= new NullParser(fLexer.getILexStream());
         }
-        parser.reset(lexer.getLexStream());
-        parser.getParseStream().setMessageHandler(new MessageHandlerAdapter(handler));
+        fParser.reset(fLexer.getILexStream());
+        fParser.getIPrsStream().setMessageHandler(new MessageHandlerAdapter(handler));
 
-        lexer.lexer(my_monitor, parser.getParseStream()); // Lex the stream to produce the token stream
+        fLexer.lexer(my_monitor, fParser.getIPrsStream()); // Lex the stream to produce the token stream
         if (my_monitor.isCancelled())
             return fCurrentAst; // TODO fCurrentAst might (probably will) be inconsistent wrt the lex stream now
 
-        fCurrentAst= parser.parser(my_monitor, 0);
+        fCurrentAst= fParser.parser(my_monitor, 0);
 
         cacheKeywordsOnce();
 
-        Object result= fCurrentAst;
-        return result;
+        return fCurrentAst;
     }
 }
