@@ -16,7 +16,7 @@ public class NullTokenColorer extends TokenColorerBase implements NullParsersym,
         super();
     }
 
-    public IRegion calculateDamageExtent(IRegion seed) {
+    public IRegion calculateDamageExtent(IRegion seed, IParseController ctlr) {
         return null;
     }
 }
